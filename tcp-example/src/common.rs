@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MathOperation {
     ADD,
     SUBTRACT,
@@ -16,7 +17,7 @@ impl MathOperation {
         }
     }
 
-    pub fn apply(self: &MathOperation, left: i32, right: i32) -> i32 {
+    pub fn apply(&self, left: i32, right: i32) -> i32 {
         match self {
             MathOperation::ADD => left + right,
             MathOperation::SUBTRACT => left - right,

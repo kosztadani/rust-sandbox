@@ -1,11 +1,12 @@
 mod common;
 
+use common::MathRequest;
 use common::MathOperation;
 use std::convert::TryInto;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
 use std::process::exit;
-use std::thread;
+use std::{io, thread};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -72,7 +73,7 @@ fn handle_connection(stream: TcpStream) {
     }
 }
 
-fn print_help_and_exit() {
+fn print_help_and_exit() -> ! {
     println!("Usage: server <port>");
     exit(1);
 }
