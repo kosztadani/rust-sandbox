@@ -40,8 +40,9 @@ fn start_server(port: u16) {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                thread::spawn(|| {
-                    handle_connection(stream);
+                thread::spawn(move || {
+                    let mut connection = MathServerConnection::new(&stream);
+                    connection.handle();
                 });
             }
             Err(e) => {
@@ -51,27 +52,60 @@ fn start_server(port: u16) {
     }
 }
 
-fn handle_connection(stream: TcpStream) {
-    let mut reader = BufReader::new(&stream);
-    let mut writer = BufWriter::new(&stream);
-    let mut buffer = [0; 9];
-    loop {
-        match reader.read_exact(&mut buffer) {
-            Ok(_) => {
-                let opcode = buffer[0];
-                let operation = MathOperation::from_opcode(opcode);
-                let left = i32::from_be_bytes(buffer[1..5].try_into().unwrap());
-                let right = i32::from_be_bytes(buffer[5..9].try_into().unwrap());
-                // intentional "bug": divide by zero to crash the thread ;)
-                let result = operation.unwrap().apply(left, right);
-                let result_bytes = result.to_be_bytes();
-                let _ = writer.write_all(&result_bytes);
-                let _ = writer.flush();
+#[derive(Debug)]
+struct MathServerConnection<'a> {
+    reader: BufReader<&'a TcpStream>,
+    writer: BufWriter<&'a TcpStream>,
+    buffer: [u8; 9],
+}
+
+impl<'a> MathServerConnection<'a> {
+    fn new(stream: &'a TcpStream) -> Self {
+        MathServerConnection {
+            reader: BufReader::new(stream),
+            writer: BufWriter::new(stream),
+            buffer: [0; 9],
+        }
+    }
+
+    fn handle(&mut self) {
+        loop {
+            match self.process() {
+                Ok(_) => continue,
+                Err(_) => {
+                    // client probably disconnected
+                    break;
+                }
             }
-            Err(_) => {
-                // client probably disconnected
-                break;
-            }
+        }
+    }
+
+    fn process(&mut self) -> Result<(), io::Error> {
+        self.fill_buffer()?;
+        let request = self.parse_request();
+        // intentional "bug": divide by zero to crash the thread ;)
+        let result = request
+            .operator
+            .apply(request.first_operand, request.second_operand);
+        let result_bytes = result.to_be_bytes();
+        self.writer.write_all(&result_bytes)?;
+        self.writer.flush()?;
+        Ok(())
+    }
+
+    fn fill_buffer(&mut self) -> Result<(), io::Error> {
+        self.reader.read_exact(&mut self.buffer)
+    }
+
+    fn parse_request(&mut self) -> MathRequest {
+        let opcode = self.buffer[0];
+        let operator = MathOperation::from_opcode(opcode).unwrap();
+        let first_operand = i32::from_be_bytes(self.buffer[1..5].try_into().unwrap());
+        let second_operand = i32::from_be_bytes(self.buffer[5..9].try_into().unwrap());
+        MathRequest {
+            operator,
+            first_operand,
+            second_operand,
         }
     }
 }
