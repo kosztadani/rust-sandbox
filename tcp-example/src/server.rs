@@ -68,6 +68,7 @@ fn handle_connection(stream: TcpStream) {
             }
             Err(_) => {
                 // client probably disconnected
+                break;
             }
         }
     }
