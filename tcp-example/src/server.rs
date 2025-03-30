@@ -27,7 +27,9 @@ fn start_server(port: u16) {
     let address = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
     let listener = match TcpListener::bind(address) {
         Ok(listener) => {
-            println!("Listening on port {}", port);
+            // get real port number if 0 was passed in
+            let listen_port = listener.local_addr().unwrap().port();
+            println!("Listening on port {}", listen_port);
             listener
         }
         Err(_) => {
