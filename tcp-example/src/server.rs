@@ -31,7 +31,7 @@ fn start_server(port: u16) {
             listener
         }
         Err(_) => {
-            println!("Error: could not listen on port {}", port);
+            eprintln!("Error: could not listen on port {}", port);
             exit(1);
         }
     };
@@ -43,7 +43,7 @@ fn start_server(port: u16) {
                 });
             }
             Err(e) => {
-                println!("Error: {}", e);
+                eprintln!("Error: {}", e);
             }
         }
     }
