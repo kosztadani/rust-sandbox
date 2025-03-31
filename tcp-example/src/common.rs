@@ -1,3 +1,5 @@
+use std::num::Wrapping;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MathRequest {
     pub operator: MathOperation,
@@ -44,12 +46,15 @@ impl MathOperation {
     }
 
     pub fn apply(&self, left: i32, right: i32) -> i32 {
-        match self {
-            MathOperation::ADD => left + right,
-            MathOperation::SUBTRACT => left - right,
-            MathOperation::MULTIPLY => left * right,
-            MathOperation::DIVIDE => left / right,
-        }
+        let wrapped_left = Wrapping(left);
+        let wrapped_right = Wrapping(right);
+        let wrapped_result = match self {
+            MathOperation::ADD => wrapped_left + wrapped_right,
+            MathOperation::SUBTRACT => wrapped_left - wrapped_right,
+            MathOperation::MULTIPLY => wrapped_left * wrapped_right,
+            MathOperation::DIVIDE => wrapped_left / wrapped_right,
+        };
+        wrapped_result.0
     }
 
     pub fn from_str(str: &str) -> Option<MathOperation> {
