@@ -12,7 +12,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[link(kind = "link-arg", name="-nostartfiles", modifiers="+verbatim")]
-extern "C" {}
+unsafe extern "C" {}
 
 #[cfg(all(target_arch = "x86_64"))]
 global_asm!(
