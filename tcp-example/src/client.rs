@@ -1,7 +1,6 @@
-mod common;
+pub mod common;
 
-use common::MathOperation;
-use common::MathRequest;
+use common::{MathOperation, MathRequest};
 use std::fmt::{Display, Formatter};
 use std::io;
 use std::io::{BufReader, BufWriter, Read, Write};

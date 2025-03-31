@@ -1,7 +1,6 @@
-mod common;
+pub mod common;
 
-use common::MathRequest;
-use common::MathOperation;
+use common::{MathOperation, MathRequest};
 use std::convert::TryInto;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
